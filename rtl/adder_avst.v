@@ -38,6 +38,7 @@ module adder_avst(clk, reset, data_in, end_in, valid_in, ready_in,
    
    always @(posedge clk) begin
       if(reset) begin
+	 // reset the signals
 	 count_out <= 0;
 	 valid_out <= 0;
 	 end_out <= 0;
