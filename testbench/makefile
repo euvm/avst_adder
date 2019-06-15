@@ -7,9 +7,9 @@ clean:
 
 run: avst.vvp avst.vpi
 	vvp -M. -mavst avst.vvp \
-	+UVM_TESTNAME=adder_avst.random_test # +UVM_VERBOSITY=DEBUG # +UVM_OBJECTION_TRACE
+	+UVM_TESTNAME=adder_avst.random_test +UVM_VERBOSITY=DEBUG # +UVM_OBJECTION_TRACE
 
-avst.vvp: test_adder_avst.v verilog/*.v
+avst.vvp: test_adder_avst.v ../rtl/*.v
 	iverilog -o $@ $^
 
 avst.vpi: adder_avst.d
