@@ -3,7 +3,7 @@ import uvm;
 import std.stdio;
 import std.string: format;
 
-class sha_st: uvm_sequence_item
+class avst_item: uvm_sequence_item
 {
   mixin uvm_object_utils;
 
@@ -12,7 +12,7 @@ class sha_st: uvm_sequence_item
     bool end;
   }
    
-  this(string name = "sha_st") {
+  this(string name = "avst_item") {
     super(name);
   }
 
@@ -30,7 +30,7 @@ class sha_st: uvm_sequence_item
   }
 }
 
-class sha_phrase_seq: uvm_sequence!sha_st
+class avst_phrase_seq: uvm_sequence!avst_item
 {
 
   mixin uvm_object_utils;
@@ -53,7 +53,7 @@ class sha_phrase_seq: uvm_sequence!sha_st
     return _is_final;
   }
 
-  void opOpAssign(string op)(sha_st item) if(op == "~")
+  void opOpAssign(string op)(avst_item item) if(op == "~")
     {
       assert(item !is null);
       phrase ~= item.data;
@@ -61,18 +61,18 @@ class sha_phrase_seq: uvm_sequence!sha_st
     }
   // task
   override void body() {
-    // uvm_info("sha_st_seq", "Starting sequence", UVM_MEDIUM);
+    // uvm_info("avst_seq", "Starting sequence", UVM_MEDIUM);
 
     for (size_t i=0; i!=phrase.length; ++i) {
       wait_for_grant();
       req.data = cast(ubyte) phrase[i];
       if (i == phrase.length - 1) req.end = true;
       else req.end = false;
-      sha_st cloned = cast(sha_st) req.clone;
+      avst_item cloned = cast(avst_item) req.clone;
       send_request(cloned);
     }
     
-    // uvm_info("sha_st", "Finishing sequence", UVM_MEDIUM);
+    // uvm_info("avst_item", "Finishing sequence", UVM_MEDIUM);
   } // body
 
   ubyte[] transform() {
@@ -88,7 +88,7 @@ class sha_phrase_seq: uvm_sequence!sha_st
   }
 }
 
-class sha_st_seq: uvm_sequence!sha_st
+class avst_seq: uvm_sequence!avst_item
 {
   @UVM_DEFAULT {
     @rand uint seq_size;
@@ -99,7 +99,7 @@ class sha_st_seq: uvm_sequence!sha_st
 
   this(string name="") {
     super(name);
-    req = sha_st.type_id.create(name ~ ".req");
+    req = avst_item.type_id.create(name ~ ".req");
   }
 
   Constraint!q{
@@ -114,22 +114,22 @@ class sha_st_seq: uvm_sequence!sha_st
 	req.randomize();
 	if (i == seq_size - 1) req.end = true;
 	else req.end = false;
-	sha_st cloned = cast(sha_st) req.clone;
-	// uvm_info("sha_st", cloned.sprint, UVM_DEBUG);
+	avst_item cloned = cast(avst_item) req.clone;
+	// uvm_info("avst_item", cloned.sprint, UVM_DEBUG);
 	send_request(cloned);
       }
-      // uvm_info("sha_st", "Finishing sequence", UVM_DEBUG);
+      // uvm_info("avst_item", "Finishing sequence", UVM_DEBUG);
     }
 
 }
 
-class sha_st_driver(string vpi_func): uvm_vpi_driver!(sha_st, vpi_func)
+class avst_driver(string vpi_func): uvm_vpi_driver!(avst_item, vpi_func)
 {
 
   mixin uvm_component_utils;
   
   @UVM_BUILD {
-    uvm_analysis_port!sha_st req_analysis;
+    uvm_analysis_port!avst_item req_analysis;
   }
 
   this(string name, uvm_component parent = null) {
@@ -157,12 +157,12 @@ class sha_st_driver(string vpi_func): uvm_vpi_driver!(sha_st, vpi_func)
     }
   }
 
-  protected void trans_received(sha_st tr) {}
-  protected void trans_executed(sha_st tr) {}
+  protected void trans_received(avst_item tr) {}
+  protected void trans_executed(avst_item tr) {}
 
 }
 
-class sha_scoreboard: uvm_scoreboard
+class avst_scoreboard: uvm_scoreboard
 {
   this(string name, uvm_component parent = null) {
     super(name, parent);
@@ -174,12 +174,12 @@ class sha_scoreboard: uvm_scoreboard
 
   uint matched;
 
-  sha_phrase_seq[] req_queue;
-  sha_phrase_seq[] rsp_queue;
+  avst_phrase_seq[] req_queue;
+  avst_phrase_seq[] rsp_queue;
 
   @UVM_BUILD {
-    uvm_analysis_imp!(sha_scoreboard, write_req) req_analysis;
-    uvm_analysis_imp!(sha_scoreboard, write_rsp) rsp_analysis;
+    uvm_analysis_imp!(avst_scoreboard, write_req) req_analysis;
+    uvm_analysis_imp!(avst_scoreboard, write_rsp) rsp_analysis;
   }
 
   override void run_phase(uvm_phase phase) {
@@ -189,7 +189,7 @@ class sha_scoreboard: uvm_scoreboard
     uvm_wait_for_ever();
   }
 
-  void write_req(sha_phrase_seq seq) {
+  void write_req(avst_phrase_seq seq) {
     synchronized(this) {
       req_queue ~= seq;
       assert(phase_run !is null);
@@ -198,7 +198,7 @@ class sha_scoreboard: uvm_scoreboard
     }
   }
 
-  void write_rsp(sha_phrase_seq seq) {
+  void write_rsp(avst_phrase_seq seq) {
     synchronized(this) {
       // seq.print();
       rsp_queue ~= seq;
@@ -222,13 +222,13 @@ class sha_scoreboard: uvm_scoreboard
 
 }
 
-class sha_st_monitor(string vpi_func): uvm_vpi_monitor!(sha_st, vpi_func)
+class avst_monitor(string vpi_func): uvm_vpi_monitor!(avst_item, vpi_func)
 {
 
   mixin uvm_component_utils;
   
   @UVM_BUILD {
-    uvm_analysis_port!sha_phrase_seq egress;
+    uvm_analysis_port!avst_phrase_seq egress;
   }
 
 
@@ -237,11 +237,11 @@ class sha_st_monitor(string vpi_func): uvm_vpi_monitor!(sha_st, vpi_func)
     
   }
 
-  sha_phrase_seq seq;
+  avst_phrase_seq seq;
 
-  override void write(sha_st item) {
+  override void write(avst_item item) {
     if (seq is null) {
-      seq = new sha_phrase_seq();
+      seq = new avst_phrase_seq();
     }
 
     // item.print();
@@ -257,7 +257,7 @@ class sha_st_monitor(string vpi_func): uvm_vpi_monitor!(sha_st, vpi_func)
 }
 
 
-class sha_st_sequencer: uvm_sequencer!sha_st
+class avst_sequencer: uvm_sequencer!avst_item
 {
   mixin uvm_component_utils;
 
@@ -266,17 +266,17 @@ class sha_st_sequencer: uvm_sequencer!sha_st
   }
 }
 
-class sha_st_agent: uvm_agent
+class avst_agent: uvm_agent
 {
 
   @UVM_BUILD {
-    sha_st_sequencer sequencer;
-    sha_st_driver!"avst"    driver;
+    avst_sequencer sequencer;
+    avst_driver!"avst"    driver;
 
-    sha_st_monitor!"avst_req"   req_monitor;
-    sha_st_monitor!"avst_rsp"   rsp_monitor;
+    avst_monitor!"avst_req"   req_monitor;
+    avst_monitor!"avst_rsp"   rsp_monitor;
 
-    sha_scoreboard   scoreboard;
+    avst_scoreboard   scoreboard;
   }
   
   mixin uvm_component_utils;
@@ -301,17 +301,17 @@ class random_test: uvm_test
   }
 
   @UVM_BUILD {
-    sha_st_env env;
+    avst_env env;
   }
   
   override void run_phase(uvm_phase phase) {
     phase.raise_objection(this);
     phase.get_objection.set_drain_time(this, 20.nsec);
-    auto rand_sequence = new sha_st_seq("sha_st_seq");
+    auto rand_sequence = new avst_seq("avst_seq");
 
     for (size_t i=0; i!=100; ++i) {
       rand_sequence.randomize();
-      auto sequence = cast(sha_st_seq) rand_sequence.clone();
+      auto sequence = cast(avst_seq) rand_sequence.clone();
       sequence.start(env.agent.sequencer, null);
     }
     phase.drop_objection(this);
@@ -326,11 +326,11 @@ class QuickFoxTest: uvm_test
     super(name, parent);
   }
 
-  @UVM_BUILD sha_st_env env;
+  @UVM_BUILD avst_env env;
   
   override void run_phase(uvm_phase phase) {
     phase.raise_objection(this);
-    auto sequence = new sha_phrase_seq("QuickFoxSeq");
+    auto sequence = new avst_phrase_seq("QuickFoxSeq");
     sequence.set_phrase("The quick brown fox jumps over the lazy dog");
 
     sequence.start(env.agent.sequencer, null);
@@ -338,11 +338,11 @@ class QuickFoxTest: uvm_test
   }
 }
 
-class sha_st_env: uvm_env
+class avst_env: uvm_env
 {
   mixin uvm_component_utils;
 
-  @UVM_BUILD private sha_st_agent agent;
+  @UVM_BUILD private avst_agent agent;
 
   this(string name, uvm_component parent) {
     super(name, parent);
