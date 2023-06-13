@@ -45,16 +45,9 @@ module test_adder;
 	 if (ready_in == 1 && reset == 0) begin
 	    case ($avst_try_next_item(tdata, tend))
 	      0: begin
-		 if (tend == 0) begin
-		    data_in <= tdata;
-		    end_in <= 0;
-		    valid_in <= 1;
-		 end
-		 else begin
-		    data_in <= tdata;
-		    end_in <= 1;
-		    valid_in <= 1;
-		 end
+		 data_in <= tdata;
+		 end_in <= tend;
+		 valid_in <= 1;
 		 @(negedge clk);
 		 #5;
 		 end_in <= 0;
